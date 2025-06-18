@@ -1,16 +1,25 @@
+"use client";
+
+import { useState } from "react";
+import ExerciseForm from "@/app/forms/ExerciseForm";
+import { Exercise } from "./types";
+
 export default function Home() {
   const exercises = [
-    { key: 1, name: "Push-up", reps: 10, sets: 3, weight: 50 },
-    { key: 2, name: "Squat", reps: 15, sets: 3, weight: 110 },
-    { key: 3, name: "Lunge", reps: 12, sets: 3, weight: 30 },
-    { key: 4, name: "Plank", reps: 1, sets: 3, weight: 45 },
-    { key: 5, name: "Burpee", reps: 8, sets: 3, weight: 35 },
+    { key: 'push-up', name: "Push-up", reps: 10, sets: 3, weight: 50 },
+    { key: 'squat', name: "Squat", reps: 15, sets: 3, weight: 110 },
+    { key: 'lunge', name: "Lunge", reps: 12, sets: 3, weight: 30 },
+    { key: 'plank', name: "Plank", reps: 1, sets: 3, weight: 45 },
+    { key: 'burpee', name: "Burpee", reps: 8, sets: 3, weight: 35 },
   ];
-
+  const [showForm, setShowForm] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise>();
+  const handleAddExercise = () => setShowForm(true);
   return (
     <div className="min-h-screen bg-black-50 p-4">
+      <ExerciseForm showForm={showForm} initial={selectedExercise} onSubmit={(a) => console.log(a)} onCancel={() => { setShowForm(false); setSelectedExercise(undefined)}} />
       <div className="relative max-w-2xl mx-auto">
-        <button className="absolute top-0 right-0 text-white bg-slate-600 hover:bg-blue-600 px-4 py-2 rounded-lg shadow-md">
+        <button className="absolute top-0 right-0 text-white bg-slate-600 hover:bg-blue-600 px-4 py-2 rounded-lg shadow-md" onClick={handleAddExercise}>
           + Add Exercise
         </button>
         <header className="text-center mb-6">
@@ -32,7 +41,11 @@ export default function Home() {
                   <button
                     type="button"
                     className="w-full p-3 text-slate-900 bg-slate-300 border rounded hover:bg-gray-100 flex justify-between items-center"
-                  >
+                    onClick={() => {
+                      setSelectedExercise(exercise);
+                      setShowForm(true);
+                    }}
+                    >
                     <span className="font-bold">{exercise.name}</span>
                     <div className="flex gap-4">
                       <div>
