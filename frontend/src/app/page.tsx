@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import ExerciseForm from "@/app/forms/ExerciseForm";
+import ExerciseForm from "@/app/components/ExerciseForm";
 import { Exercise } from "./types";
+import SignIn from "./components/SignInButton";
 
 export default function Home() {
   const exercises = [
@@ -19,11 +20,15 @@ export default function Home() {
     <div className="min-h-screen bg-black-50 p-4">
       <ExerciseForm showForm={showForm} initial={selectedExercise} onSubmit={(a) => console.log(a)} onCancel={() => { setShowForm(false); setSelectedExercise(undefined)}} />
       <div className="relative max-w-2xl mx-auto">
-        <button className="absolute top-0 right-0 text-white bg-slate-600 hover:bg-blue-600 px-4 py-2 rounded-lg shadow-md" onClick={handleAddExercise}>
-          + Add Exercise
-        </button>
-        <header className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-slate-300">simplefit.</h1>
+        <section className="absolute top-0 right-0 flex items-center gap-2">
+          <SignIn className="bg-sky-700 hover:bg-blue-600 px-4 py-2 rounded-lg shadow-md"/>
+          <button className="text-white bg-slate-600 hover:bg-blue-600 px-4 py-2 rounded-lg shadow-md" onClick={handleAddExercise}>
+            + Add Exercise
+          </button>
+        </section>
+        <header className="md:text-center mb-6 mt-4">
+          <h1 className="hidden md:block text-4xl font-bold text-slate-300">simplefit.</h1>
+          <h1 className="block md:hidden text-4xl font-bold text-slate-300">s.fit.</h1>
         </header>
         <div className="mb-6">
           <input

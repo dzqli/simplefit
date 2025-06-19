@@ -55,7 +55,7 @@ export default function ExerciseForm({ showForm, onSubmit, onCancel, initial }: 
   return showForm ? (
     <form
       onSubmit={handleSubmit}
-      className="fixed left-0 top-0 z-100 w-full h-full bg-white text-black rounded-lg shadow-md p-6 flex flex-col gap-4"
+      className="fixed left-0 top-0 z-100 w-full h-full bg-white text-black p-6 flex flex-col gap-4"
     >
       <h2 className="text-2xl font-bold mb-2 text-center">Add Exercise</h2>
       <div>
