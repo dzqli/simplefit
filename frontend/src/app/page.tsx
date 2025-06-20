@@ -23,10 +23,10 @@ export default function Home() {
         <ExerciseForm showForm={showForm} initial={selectedExercise} onSubmit={(a) => console.log(a)} onCancel={() => { setShowForm(false); setSelectedExercise(undefined)}} />
         <div className="relative max-w-2xl mx-auto">
           <section className="absolute top-0 right-0 flex items-center gap-2">
-            <SignIn className="bg-sky-700 hover:bg-blue-600 px-4 py-2 rounded-lg shadow-md"/>
             <button className="text-white bg-slate-600 hover:bg-blue-600 px-4 py-2 rounded-lg shadow-md" onClick={handleAddExercise}>
               + Add Exercise
             </button>
+            <SignIn className="bg-slate-600 hover:bg-blue-600 px-4 py-2 rounded-lg shadow-md" />
           </section>
           <header className="md:text-center mb-6 mt-4">
             <h1 className="hidden md:block text-4xl font-bold text-slate-300">simplefit.</h1>
