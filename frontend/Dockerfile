@@ -6,7 +6,6 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:stable-alpine AS production
-COPY --from=build /app/.next /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+ENV NODE_ENV=production
+EXPOSE 8080
+CMD ["npm", "run", "start"]
