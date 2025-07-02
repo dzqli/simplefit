@@ -25,6 +25,10 @@ export default function ExerciseForm({ showForm, onSubmit, onCancel, initial }: 
   const [reps, setReps] = useState(initial?.reps || "");
   const [weight, setWeight] = useState(initial?.weight || "");
 
+  async function testFetch() {
+    return fetch('/api/exercise');
+  }
+
   useEffect(() => {
     setKey(generateKey(name));
   }, [name]);
@@ -47,8 +51,11 @@ export default function ExerciseForm({ showForm, onSubmit, onCancel, initial }: 
     }
   }, [initial]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name || !key) return;
+    const res = await testFetch();
+    const body = await res.text();
+    console.log(body);
     onSubmit({ key, name, muscleGroup, motion });
   };
 
