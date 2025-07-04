@@ -5,7 +5,7 @@ import (
     "net/http"
     "os"
     "strings"
-
+    "encoding/json"
     "github.com/golang-jwt/jwt/v4"
 )
 
@@ -26,6 +26,7 @@ func init() {
 
 func main() {
     http.Handle("/", authMiddleware(http.HandlerFunc(apiHandler)))
+    http.Handle("/exercises", http.HandlerFunc(getAllExercise))
     http.ListenAndServe(":8080", nil)
 }
 
@@ -69,6 +70,25 @@ func authMiddleware(next http.Handler) http.Handler {
 
         next.ServeHTTP(w, r)
     })
+}
+
+// test endpoint, unauthenticated for now
+func getAllExercise(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodGet {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json")
+    jsonData := []map[string]interface{}{
+        {"key": "push-up", "name": "Push-up", "reps": 10, "sets": 3, "weight": 50},
+        {"key": "squat", "name": "Squat", "reps": 15, "sets": 3, "weight": 110},
+        {"key": "lunge", "name": "Lunge", "reps": 12, "sets": 3, "weight": 30},
+        {"key": "plank", "name": "Plank", "reps": 1, "sets": 3, "weight": 45},
+        {"key": "burpee", "name": "Burpee", "reps": 8, "sets": 3, "weight": 35},
+    }
+    if err := json.NewEncoder(w).Encode(jsonData); err != nil {
+        http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+    }
 }
 
 func apiHandler(w http.ResponseWriter, r *http.Request) {
