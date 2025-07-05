@@ -1,6 +1,7 @@
 package main
 
 import (
+    "log"
     "fmt"
     "net/http"
     "os"
@@ -25,9 +26,15 @@ func init() {
 }
 
 func main() {
-    http.Handle("/", authMiddleware(http.HandlerFunc(apiHandler)))
-    http.Handle("/exercises", http.HandlerFunc(getAllExercise))
-    http.ListenAndServe(":8080", nil)
+    router := http.NewServeMux()
+
+    router.Handle("GET /", authMiddleware(http.HandlerFunc(testAuthenticatedHandler)))
+    router.Handle("GET /exercises", http.HandlerFunc(getAllExercises))
+
+    err := http.ListenAndServe(":8080", router)
+    if err != nil {
+        log.Fatal(err)
+    }
 }
 
 // authMiddleware extracts the Bearer token, verifies its signature,
@@ -73,24 +80,20 @@ func authMiddleware(next http.Handler) http.Handler {
 }
 
 // test endpoint, unauthenticated for now
-func getAllExercise(w http.ResponseWriter, r *http.Request) {
-    if r.Method != http.MethodGet {
-        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        return
-    }
+func getAllExercises(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     jsonData := []map[string]interface{}{
-        {"key": "push-up", "name": "Push-up", "reps": 10, "sets": 3, "weight": 50},
-        {"key": "squat", "name": "Squat", "reps": 15, "sets": 3, "weight": 110},
-        {"key": "lunge", "name": "Lunge", "reps": 12, "sets": 3, "weight": 30},
-        {"key": "plank", "name": "Plank", "reps": 1, "sets": 3, "weight": 45},
-        {"key": "burpee", "name": "Burpee", "reps": 8, "sets": 3, "weight": 35},
+        {"id": "push-up", "name": "Push-up", "reps": 10, "sets": 3, "weight": 50},
+        {"id": "squat", "name": "Squat", "reps": 15, "sets": 3, "weight": 110},
+        {"id": "lunge", "name": "Lunge", "reps": 12, "sets": 3, "weight": 30},
+        {"id": "plank", "name": "Plank", "reps": 1, "sets": 3, "weight": 45},
+        {"id": "burpee", "name": "Burpee", "reps": 8, "sets": 3, "weight": 35},
     }
     if err := json.NewEncoder(w).Encode(jsonData); err != nil {
         http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
     }
 }
 
-func apiHandler(w http.ResponseWriter, r *http.Request) {
+func testAuthenticatedHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintln(w, "✅ Authorized!")
 }

@@ -8,11 +8,11 @@ import SignIn from "./components/SignInButton";
 
 export default function Home() {
   const exercises = [
-    { key: 'push-up', name: "Push-up", reps: 10, sets: 3, weight: 50 },
-    { key: 'squat', name: "Squat", reps: 15, sets: 3, weight: 110 },
-    { key: 'lunge', name: "Lunge", reps: 12, sets: 3, weight: 30 },
-    { key: 'plank', name: "Plank", reps: 1, sets: 3, weight: 45 },
-    { key: 'burpee', name: "Burpee", reps: 8, sets: 3, weight: 35 },
+    { id: 'push-up', name: "Push-up", reps: 10, sets: 3, weight: 50 },
+    { id: 'squat', name: "Squat", reps: 15, sets: 3, weight: 110 },
+    { id: 'lunge', name: "Lunge", reps: 12, sets: 3, weight: 30 },
+    { id: 'plank', name: "Plank", reps: 1, sets: 3, weight: 45 },
+    { id: 'burpee', name: "Burpee", reps: 8, sets: 3, weight: 35 },
   ];
   const [showForm, setShowForm] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise>();
