@@ -30,6 +30,8 @@ func main() {
 
     router.Handle("GET /", authMiddleware(http.HandlerFunc(testAuthenticatedHandler)))
     router.Handle("GET /exercises", http.HandlerFunc(getAllExercises))
+    router.Handle("PUT /exercises/", http.HandlerFunc(upsertExercise))
+    router.Handle("DELETE /exercises/{id}", http.HandlerFunc(deleteExercise))
 
     err := http.ListenAndServe(":8080", router)
     if err != nil {
@@ -92,6 +94,24 @@ func getAllExercises(w http.ResponseWriter, r *http.Request) {
     if err := json.NewEncoder(w).Encode(jsonData); err != nil {
         http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
     }
+}
+
+func upsertExercise(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "application/json")
+    var exercise map[string]interface{}
+    if err := json.NewDecoder(r.Body).Decode(&exercise); err != nil {
+        http.Error(w, "Invalid JSON", http.StatusBadRequest)
+        return
+    }
+    // Echoing it back for now
+    if err := json.NewEncoder(w).Encode(exercise); err != nil {
+        http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+    }
+}
+
+func deleteExercise(w http.ResponseWriter, r *http.Request) {
+    // This is a placeholder for the delete operation
+    w.WriteHeader(http.StatusNoContent) // No content response
 }
 
 func testAuthenticatedHandler(w http.ResponseWriter, r *http.Request) {
