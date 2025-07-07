@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const targetUrl = `${process.env.API_URL}`;
+    const targetUrl = `${process.env.API_URL}/exercises`;
 
     const signedJwt = jwt.sign(token, process.env.AUTH_SECRET || '', {
         algorithm: "HS256"
