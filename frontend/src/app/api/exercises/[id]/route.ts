@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import jwt from 'jsonwebtoken';
 
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const token = await getToken({ req });
     if (!token) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -23,6 +23,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             "Authorization": `Bearer ${signedJwt}`,
         },
         body: req.body,
+        // @ts-expect-error: Node fetch needs duplex but somehow typescript configs don't have it defined
         duplex: 'half',
     });
 
@@ -31,13 +32,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     });
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const token = await getToken({ req });
     if (!token) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const targetUrl = `${process.env.API_URL}/exercises/${params.id}`;
+    const { id } = await params;
+
+    const targetUrl = `${process.env.API_URL}/exercises/${id}`;
 
     const signedJwt = jwt.sign(token, process.env.AUTH_SECRET || '', {
         algorithm: "HS256"

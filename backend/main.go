@@ -5,6 +5,7 @@ import (
     "fmt"
     "net/http"
     "os"
+    "context"
     "strings"
     "encoding/json"
     "github.com/golang-jwt/jwt/v4"
@@ -18,7 +19,6 @@ var whitelist = map[string]bool {
 }
 
 func init() {
-    // Load the same secret your auth service uses:
     jwtSecret = []byte(os.Getenv("AUTH_SECRET"))
     if len(jwtSecret) == 0 {
         panic("AUTH_SECRET must be set")
@@ -29,9 +29,9 @@ func main() {
     router := http.NewServeMux()
 
     router.Handle("GET /", authMiddleware(http.HandlerFunc(testAuthenticatedHandler)))
-    router.Handle("GET /exercises", http.HandlerFunc(getAllExercises))
-    router.Handle("PUT /exercises/", http.HandlerFunc(upsertExercise))
-    router.Handle("DELETE /exercises/{id}", http.HandlerFunc(deleteExercise))
+    router.Handle("GET /exercises", authMiddleware(http.HandlerFunc(getAllExercises)))
+    router.Handle("PUT /exercises/{id}", authMiddleware(http.HandlerFunc(upsertExercise)))
+    router.Handle("DELETE /exercises/{id}", authMiddleware(http.HandlerFunc(deleteExercise)))
 
     err := http.ListenAndServe(":8080", router)
     if err != nil {
@@ -63,9 +63,11 @@ func authMiddleware(next http.Handler) http.Handler {
             return
         }
 
-        // At this point token.Claims contains your custom claims,
-        // e.g. user ID, roles, etc. You can cast to jwt.MapClaims:
-        // claims := token.Claims.(jwt.MapClaims)
+        claims := token.Claims.(jwt.MapClaims)
+        email, _ := claims["email"].(string)
+        ctx := context.WithValue(r.Context(), "email", email)
+        r = r.WithContext(ctx)
+
         origin := r.Header.Get("Origin")
 
         if whitelist[origin] {
@@ -83,6 +85,9 @@ func authMiddleware(next http.Handler) http.Handler {
 
 // test endpoint, unauthenticated for now
 func getAllExercises(w http.ResponseWriter, r *http.Request) {
+    email := r.Context().Value("email").(string)
+    log.Printf("User email: %s", email)
+
     w.Header().Set("Content-Type", "application/json")
     jsonData := []map[string]interface{}{
         {"id": "push-up", "name": "Push-up", "reps": 10, "sets": 3, "weight": 50},
@@ -97,6 +102,11 @@ func getAllExercises(w http.ResponseWriter, r *http.Request) {
 }
 
 func upsertExercise(w http.ResponseWriter, r *http.Request) {
+    email := r.Context().Value("email").(string)
+    log.Printf("User email: %s", email)
+    id := r.PathValue("id")
+    log.Printf("Received request for exercise with id: %s", id)
+
     w.Header().Set("Content-Type", "application/json")
     var exercise map[string]interface{}
     if err := json.NewDecoder(r.Body).Decode(&exercise); err != nil {
