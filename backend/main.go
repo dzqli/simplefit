@@ -8,6 +8,8 @@ import (
     "context"
     "strings"
     "encoding/json"
+    firebase "firebase.google.com/go"
+    "google.golang.org/api/option"
     "github.com/golang-jwt/jwt/v4"
 )
 
@@ -23,9 +25,25 @@ func init() {
     if len(jwtSecret) == 0 {
         panic("AUTH_SECRET must be set")
     }
+    if _, err := os.Stat("db.secret.json"); os.IsNotExist(err) {
+        panic("db.secret.json private key file is missing")
+    }
 }
 
 func main() {
+    ctx := context.Background()
+    sa := option.WithCredentialsFile("db.secret.json")
+    app, err := firebase.NewApp(ctx, nil, sa)
+    if err != nil {
+        log.Fatalln(err)
+    }
+
+    client, err := app.Firestore(ctx)
+    if err != nil {
+        log.Fatalln(err)
+    }
+    defer client.Close()
+
     router := http.NewServeMux()
 
     router.Handle("GET /", authMiddleware(http.HandlerFunc(testAuthenticatedHandler)))
@@ -33,7 +51,7 @@ func main() {
     router.Handle("PUT /exercises/{id}", authMiddleware(http.HandlerFunc(upsertExercise)))
     router.Handle("DELETE /exercises/{id}", authMiddleware(http.HandlerFunc(deleteExercise)))
 
-    err := http.ListenAndServe(":8080", router)
+    err = http.ListenAndServe(":8080", router)
     if err != nil {
         log.Fatal(err)
     }
