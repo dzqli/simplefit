@@ -5,6 +5,7 @@ import ExerciseForm from "@/app/components/ExerciseForm";
 import { Exercise } from "./types";
 import useSWR from 'swr'
 import SignIn from "./components/SignInButton";
+import ExerciseRow from "./components/ExerciseRow";
 
 const fetcher = () => fetch('/api/exercises').then((r) => r.json());
 
@@ -63,29 +64,16 @@ export default function Home() {
         {exercises?.length ? (
           <ul className="space-y-2">
             {exercises?.map((exercise, index) => (
-                <li key={index}>
-                  <button
-                    type="button"
-                    className="w-full p-3 text-slate-900 bg-slate-300 border rounded hover:bg-gray-100 flex justify-between items-center"
-                    onClick={() => {
-                      setSelectedExercise(exercise);
-                      setShowForm(true);
-                    }}
-                    >
-                    <span className="font-bold">{exercise.name}</span>
-                    <div className="flex gap-4">
-                      <div>
-                        <span className="font-semibold">Sets:</span> {exercise.sets}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Reps:</span> {exercise.reps}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Weight:</span> {exercise.weight}
-                      </div>
-                    </div>
-                  </button>
-                </li>
+              <ExerciseRow
+                key={exercise.id}
+                exercise={exercise}
+                onEdit={() => {
+                  setSelectedExercise(exercise);
+                  setShowForm(true);
+                }}
+                onDelete={() => null}
+                onSave={() => null}
+              />
             ))}
           </ul>
         ) : (
