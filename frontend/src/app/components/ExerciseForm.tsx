@@ -20,9 +20,9 @@ export default function ExerciseForm({ showForm, onSubmit, onCancel, initial }: 
   const [id, setId] = useState(initial?.id || "");
   const [muscleGroup, setMuscleGroup] = useState(initial?.muscleGroup || "");
   const [motion, setMotion] = useState(initial?.motion || "");
-  const [sets, setSets] = useState(initial?.sets || "");
-  const [reps, setReps] = useState(initial?.reps || "");
-  const [weight, setWeight] = useState(initial?.weight || "");
+  const [sets, setSets] = useState(initial?.sets?.toString() || "");
+  const [reps, setReps] = useState(initial?.reps?.toString() || "");
+  const [weight, setWeight] = useState(initial?.weight?.toString() || "");
 
   useEffect(() => {
     setId(generateId(name));
@@ -33,9 +33,9 @@ export default function ExerciseForm({ showForm, onSubmit, onCancel, initial }: 
       setName(initial.name);
       setMuscleGroup(initial.muscleGroup ?? '');
       setMotion(initial.motion ?? '');
-      setSets(initial.sets ?? '');
-      setReps(initial.reps ?? '');
-      setWeight(initial.weight ?? '');
+      setSets(initial.sets?.toString() ?? '');
+      setReps(initial.reps?.toString() ?? '');
+      setWeight(initial.weight?.toString() ?? '');
     } else {
       setName("");
       setMuscleGroup("");
@@ -48,7 +48,7 @@ export default function ExerciseForm({ showForm, onSubmit, onCancel, initial }: 
 
   const handleSubmit = async () => {
     if (!name || !id) return;
-    onSubmit({ id, name, muscleGroup, motion });
+    onSubmit({ id, name, muscleGroup, motion, sets: sets ? parseInt(sets) : undefined, reps: reps ? parseInt(reps) : undefined, weight: weight ? parseFloat(weight) : undefined });
   };
 
   return showForm ? (
