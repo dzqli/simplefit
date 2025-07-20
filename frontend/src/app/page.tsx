@@ -7,6 +7,7 @@ import useSWR from 'swr'
 import SignIn from "./components/SignInButton";
 import ExerciseRow from "./components/ExerciseRow";
 import ConfirmationModal from "./components/ConfirmationModal";
+import Toast from "./components/Toast";
 
 const fetcher = () => fetch('/api/exercises').then((r) => r.json());
 
@@ -21,6 +22,16 @@ export default function Home() {
   const [showForm, setShowForm] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise>();
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastTheme, setToastTheme] = useState<"success" | "error" | "info">("info");
+
+  const toast = (message: string, theme: "success" | "error" | "info" = "info") => {
+    setToastMessage(message);
+    setToastTheme(theme);
+    setToastVisible(true);
+  };
+
   const handleAddExercise = () => setShowForm(true);
 
   const handleSubmit = async (data: Exercise) => {
@@ -33,8 +44,10 @@ export default function Home() {
         body: JSON.stringify(data),
       })
       mutate();
+      toast(`Exercise ${data.name} saved successfully!`, "success");
     } catch (error) {
       console.error("Failed to submit exercise:", error);
+      toast(`Failed to save exercise: ${error}`, "error");
     } finally {
       setShowForm(false);
       setSelectedExercise(undefined);
@@ -49,8 +62,10 @@ export default function Home() {
       setShowConfirmationModal(false);
       setSelectedExercise(undefined);
       mutate();
+      toast("Exercise deleted successfully!", "success");
     } catch (error) {
       console.error("Failed to delete exercise:", error);
+      toast(`Failed to delete exercise: ${error}`, "error");
     }
   }; 
 
@@ -118,6 +133,12 @@ export default function Home() {
         message="Are you sure you want to delete this exercise?"
         confirmText="Delete"
         cancelText="Cancel"
+      />
+      <Toast
+        visible={toastVisible}
+        setVisible={setToastVisible}
+        message={toastMessage}
+        theme={toastTheme}
       />
     </div>
   );
