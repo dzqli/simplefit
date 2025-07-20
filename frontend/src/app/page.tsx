@@ -6,27 +6,33 @@ import { Exercise } from "./types";
 import useSWR from 'swr'
 import SignIn from "./components/SignInButton";
 import ExerciseRow from "./components/ExerciseRow";
+import ConfirmationModal from "./components/ConfirmationModal";
 
 const fetcher = () => fetch('/api/exercises').then((r) => r.json());
 
 export default function Home() {
-  const { data: exercises, isLoading } = useSWR<Exercise[]>(
+  const { data: exercises, isLoading, mutate } = useSWR<Exercise[]>(
     '/api/exercises',
-    fetcher
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    }
   );
   const [showForm, setShowForm] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise>();
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const handleAddExercise = () => setShowForm(true);
 
-  const handleSubmit = (data: Exercise) => {
+  const handleSubmit = async (data: Exercise) => {
     try {
-      fetch(`/api/exercises/${data.id}`, {
+      await fetch(`/api/exercises/${data.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       })
+      mutate();
     } catch (error) {
       console.error("Failed to submit exercise:", error);
     } finally {
@@ -34,6 +40,19 @@ export default function Home() {
       setSelectedExercise(undefined);
     };
   };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await fetch(`/api/exercises/${id}`, {
+        method: 'DELETE',
+      });
+      setShowConfirmationModal(false);
+      setSelectedExercise(undefined);
+      mutate();
+    } catch (error) {
+      console.error("Failed to delete exercise:", error);
+    }
+  }; 
 
   if (isLoading) return (
     <div className="flex justify-center items-center h-100">
@@ -63,7 +82,7 @@ export default function Home() {
         </div>
         {exercises?.length ? (
           <ul className="space-y-2">
-            {exercises?.map((exercise, index) => (
+            {exercises?.map((exercise) => (
               <ExerciseRow
                 key={exercise.id}
                 exercise={exercise}
@@ -71,8 +90,11 @@ export default function Home() {
                   setSelectedExercise(exercise);
                   setShowForm(true);
                 }}
-                onDelete={() => null}
-                onSave={() => null}
+                onDelete={(toDelete) => {
+                  setSelectedExercise(toDelete);
+                  setShowConfirmationModal(true);
+                }}
+                onSave={handleSubmit}
               />
             ))}
           </ul>
@@ -80,6 +102,23 @@ export default function Home() {
           <p className="text-center text-gray-500">Add an exercise to get started.</p>
         )}
       </div>
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onConfirm={() => {  
+          if (selectedExercise) {
+            handleDelete(selectedExercise.id);
+            setSelectedExercise(undefined);
+          }
+        }}
+        onCancel={() => {
+          setSelectedExercise(undefined);
+          setShowConfirmationModal(false);
+        }}
+        title="Delete Exercise"
+        message="Are you sure you want to delete this exercise?"
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 }
