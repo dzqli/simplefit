@@ -37,13 +37,16 @@ const ExerciseRow: React.FC<ExerciseRowProps> = ({ exercise, onEdit, onDelete, o
         ) : (
           <div className="flex gap-4">
             <div>
-              <span className="font-semibold">Sets:</span> {exercise.sets}
+              <span className="font-semibold hidden md:inline">Sets:</span>
+              <span className="font-semibold inline md:hidden">S:</span> {exercise.sets}
             </div>
             <div>
-              <span className="font-semibold">Reps:</span> {exercise.reps}
+              <span className="font-semibold hidden md:inline">Reps:</span>
+              <span className="font-semibold inline md:hidden">R:</span> {exercise.reps}
             </div>
             <div>
-              <span className="font-semibold">Weight:</span> {exercise.weight}
+              <span className="font-semibold hidden md:inline">Weight:</span>
+              <span className="font-semibold inline md:hidden">W:</span> {exercise.weight}
             </div>
           </div>
         )}
