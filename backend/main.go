@@ -29,11 +29,11 @@ func init() {
     if len(jwtSecret) == 0 {
         panic("AUTH_SECRET must be set")
     }
-    if _, err := os.Stat("db.secret.json"); os.IsNotExist(err) {
+    if _, err := os.Stat("secrets/db.secret.json"); os.IsNotExist(err) {
         panic("db.secret.json private key file is missing")
     }
     ctx := context.Background()
-    sa := option.WithCredentialsFile("db.secret.json")
+    sa := option.WithCredentialsFile("secrets/db.secret.json")
     app, err := firebase.NewApp(ctx, nil, sa)
     if err != nil {
         log.Fatalln(err)
