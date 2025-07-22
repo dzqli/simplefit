@@ -9,7 +9,6 @@ import (
     "strings"
     "encoding/json"
     "github.com/google/uuid"
-    firebase "firebase.google.com/go"
     "cloud.google.com/go/firestore"
     "google.golang.org/api/iterator"
     "google.golang.org/api/option"
@@ -17,7 +16,7 @@ import (
 )
 
 var jwtSecret []byte
-var client *firestore.Client
+var dbclient *firestore.Client
 
 var whitelist = map[string]bool {
   "http://localhost:3000":   true,
@@ -26,27 +25,25 @@ var whitelist = map[string]bool {
 
 func init() {
     jwtSecret = []byte(os.Getenv("AUTH_SECRET"))
+		projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
     if len(jwtSecret) == 0 {
         panic("AUTH_SECRET must be set")
     }
-    if _, err := os.Stat("secrets/db.secret.json"); os.IsNotExist(err) {
+    _, err := os.Stat("secrets/db.secret.json")
+		if os.IsNotExist(err) {
         panic("db.secret.json private key file is missing")
     }
     ctx := context.Background()
     sa := option.WithCredentialsFile("secrets/db.secret.json")
-    app, err := firebase.NewApp(ctx, nil, sa)
-    if err != nil {
-        log.Fatalln(err)
-    }
 
-    client, err = app.Firestore(ctx)
+    dbclient, err = firestore.NewClient(ctx, projectID, sa)
     if err != nil {
         log.Fatalln(err)
     }
 }
 
 func main() {
-    defer client.Close()
+    defer dbclient.Close()
 
     router := http.NewServeMux()
 
@@ -91,12 +88,12 @@ func authMiddleware(next http.Handler) http.Handler {
 
         // handle user creation or retrieval
         var userID string
-        userIter := client.Collection("users").Where("email", "==", email).Limit(1).Documents(r.Context())
+        userIter := dbclient.Collection("users").Where("email", "==", email).Limit(1).Documents(r.Context())
         userDoc, err := userIter.Next()
         if err == iterator.Done {
             log.Printf("No user found - creating new user")
             userID = uuid.New().String()
-            _, err := client.Collection("users").Doc(userID).Set(r.Context(), map[string]interface{}{
+            _, err := dbclient.Collection("users").Doc(userID).Set(r.Context(), map[string]interface{}{
                 "id":    userID,
                 "email": email,
             })
@@ -145,12 +142,12 @@ func getAllExercises(w http.ResponseWriter, r *http.Request) {
     var iter *firestore.DocumentIterator
 
     if search != "" {
-        iter = client.Collection("users").Doc(userID).Collection("exercises").
+        iter = dbclient.Collection("users").Doc(userID).Collection("exercises").
             Where("name", ">=", search).
             Where("name", "<", search+"\uf8ff").
             Documents(r.Context())
     } else {
-        iter = client.Collection("users").Doc(userID).Collection("exercises").Documents(r.Context())
+        iter = dbclient.Collection("users").Doc(userID).Collection("exercises").Documents(r.Context())
     }
     for {
         doc, err := iter.Next()
@@ -195,7 +192,7 @@ func upsertExercise(w http.ResponseWriter, r *http.Request) {
 
     log.Printf("Received request for user %s exercise with id: %s", userID, exercise["id"])
 
-    _, err := client.Collection("users").Doc(userID).Collection("exercises").Doc(exercise["id"].(string)).Set(r.Context(), exercise)
+    _, err := dbclient.Collection("users").Doc(userID).Collection("exercises").Doc(exercise["id"].(string)).Set(r.Context(), exercise)
     if err != nil {
         http.Error(w, "Failed to upsert exercise: "+err.Error(), http.StatusInternalServerError)
         return
@@ -216,7 +213,7 @@ func deleteExercise(w http.ResponseWriter, r *http.Request) {
 
     log.Printf("Received request to delete exercise with id: %s for user %s", id, userID)
 
-    _, err := client.Collection("users").Doc(userID).Collection("exercises").Doc(id).Delete(r.Context())
+    _, err := dbclient.Collection("users").Doc(userID).Collection("exercises").Doc(id).Delete(r.Context())
     if err != nil {
         http.Error(w, "Failed to delete exercise: "+err.Error(), http.StatusInternalServerError)
         return
