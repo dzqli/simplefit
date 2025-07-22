@@ -26,6 +26,7 @@ var whitelist = map[string]bool {
 func init() {
     jwtSecret = []byte(os.Getenv("AUTH_SECRET"))
 		projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
+		dbID := os.Getenv("GOOGLE_DS_FIRESTORE_ID")
     if len(jwtSecret) == 0 {
         panic("AUTH_SECRET must be set")
     }
@@ -36,7 +37,7 @@ func init() {
     ctx := context.Background()
     sa := option.WithCredentialsFile("secrets/db.secret.json")
 
-    dbclient, err = firestore.NewClient(ctx, projectID, sa)
+    dbclient, err = firestore.NewClientWithDatabase(ctx, projectID, dbID, sa)
     if err != nil {
         log.Fatalln(err)
     }
